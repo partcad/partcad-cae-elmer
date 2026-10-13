@@ -46,7 +46,7 @@ parts:
         beam-tip: 1 W
 ```
 
-What comes back is a `<part>.<analysis>.glb` the PartCAD Viewer shows in the analysis's tab -- coloured by
+What comes back is a `<part>.<analysis>.glb` the Digital Thread shows in the analysis's tab -- coloured by
 von Mises stress, by how far each point moves in the first mode, by temperature, or by pressure -- a
 measurement line in the log, and **findings**, which fail `pc test`:
 
