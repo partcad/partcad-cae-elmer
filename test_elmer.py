@@ -124,7 +124,39 @@ def test_a_load_is_a_traction_along_minus_z():
     # 100 N over 100 mm^2 is 1 MPa.
     assert "Force 3 = -1000000" in sif
     assert "Displacement 1 = 0" in sif
-    assert "Stress Bodyforce 3 = -0" in sif
+    assert "Stress Bodyforce 3 = 0\n" in sif
+
+
+def test_a_load_with_a_direction_is_a_traction_along_it():
+    sif = fea_elmer._sif(
+        {"self_weight": False},
+        {"fix0": 1, "load0": 2},
+        {"fix0": [4]},
+        {"load0": [5]},
+        [{"load": 5.0, "force": [3.0, 0.0, -4.0], "area": 1.0}],
+    )
+    # 3 N and -4 N over 1 mm^2; nothing along Y, so no Y at all.
+    assert "Force 1 = 3000000" in sif and "Force 3 = -4000000" in sif
+    assert "Force 2" not in sif
+
+
+def test_the_part_is_weighed_under_the_gravity_it_states():
+    sif = fea_elmer._sif({"density": 1000, "gravity": [0.0, -8.0, -6.0]}, {"fix0": 1}, {"fix0": [4]}, {}, [])
+    assert "Stress Bodyforce 1 = 0" in sif
+    assert "Stress Bodyforce 2 = -8000" in sif and "Stress Bodyforce 3 = -6000" in sif
+    # Its own gravity replaces the default, and nought weighs nothing.
+    sif = fea_elmer._sif({"density": 1000, "gravity": [0, 0, 0]}, {"fix0": 1}, {"fix0": [4]}, {}, [])
+    assert "Stress Bodyforce 3 = 0" in sif
+    sif = fea_elmer._sif({"density": 1000}, {"fix0": 1}, {"fix0": [4]}, {}, [])
+    assert "Stress Bodyforce 3 = -9810" in sif
+
+
+def test_the_fea_file_type_says_it_reads_a_direction_and_a_gravity():
+    import yaml
+
+    with open(os.path.join(os.path.dirname(__file__), "partcad.yaml"), encoding="utf-8") as f:
+        declared = yaml.safe_load(f)["cae"]["fea"]
+    assert sorted(declared["reads"]) == ["force", "gravity"]
 
 
 def test_heat_is_a_flux_and_convection_meets_the_ambient():

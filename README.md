@@ -24,7 +24,7 @@ runs, so an inlet drawn as a 3 mm circle is a 3 mm circle; a port with no sketch
 
 | analysis | section keys | what they mean here |
 | --- | --- | --- |
-| `fea` | `fix:`, `load:` | held still in every direction; a force spread over the faces, along -Z |
+| `fea` | `fix:`, `load:`, `gravity:` | held still in every direction; a force spread over the faces, along the direction the part states (`[x, y, z]` in its frame) or along -Z for a magnitude; the acceleration of free fall the part is weighed under, in its frame |
 | `dynamic` | `fix:` | held still; the lowest `modes` natural frequencies and their shapes are found |
 | `thermal` | `temperature:`, `heat:`, `convection:` | held at a temperature (C); a power put in (W); cooled by a film coefficient (W/(m^2*K)) against `ambient_temperature`. Every other surface is insulated |
 | `cfd` | `load:`, `outlet:`, `fix:` | an inlet pushed on with its force over its area; an outlet at the reference pressure; walls. Every surface that is neither an inlet nor an outlet is a no-slip wall |
@@ -90,7 +90,7 @@ for every default and why it is what it is.
 | `mesh_size` | all | largest tetrahedron, as a fraction of the part's largest dimension |
 | `mesh_order` | fea, dynamic, thermal | 2 for quadratic tetrahedra, 1 for linear |
 | `youngs_modulus`, `poissons_ratio`, `density` | fea, dynamic | the material, in Pa and kg/m^3 |
-| `yield_strength`, `safety_factor`, `max_displacement`, `self_weight` | fea | the thresholds, and gravity |
+| `yield_strength`, `safety_factor`, `max_displacement`, `self_weight` | fea | the thresholds, and gravity (9.81 m/s² along -Z, unless the part states `gravity:`) |
 | `modes`, `min_frequency` | dynamic | how many modes, and the lowest first frequency allowed (Hz) |
 | `conductivity`, `ambient_temperature`, `max_temperature` | thermal | W/(m*K), and Celsius |
 | `density`, `viscosity`, `iterations`, `max_velocity`, `min_flow_rate` | cfd | the fluid (kg/m^3, Pa*s), the solve, the thresholds |
