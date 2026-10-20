@@ -57,8 +57,8 @@ simulation measured is in newtons, so write the unit: `[0, -2.7, -155.2]` would 
 `cfd` reads its `load:` the same way: the newtons that push the fluid in, spread over the inlet's area.
 
 `gravity:` is an acceleration, m/s² along each of the part's axes -- a number, or a string saying so
-(`9.81 m/s^2`). The part's own weight, its `density` times its volume, is taken under it instead of the
-9.81 m/s² along -Z that `self_weight` applies otherwise; a part's own weight is never a `load`.
+(`9.81 m/s^2`). The part's own weight is its mass, `density` times its volume, under that acceleration, in
+place of the 9.81 m/s² along -Z that `self_weight` applies otherwise; it is never a `load`.
 
 What comes back is a `<part>.<analysis>.glb` the Digital Thread shows in the analysis's tab -- coloured by
 von Mises stress, by how far each point moves in the first mode, by temperature, or by pressure -- a
