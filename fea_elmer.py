@@ -6,10 +6,11 @@
 """`pc cae fea`, by Elmer: a linear static stress analysis of one part.
 
 `fix:` holds the faces its ports cover still in every direction; `load:` spreads
-its force evenly over the faces its ports cover, along -Z, which is where a
-weight goes -- PartCAD's `load:` is a magnitude, and a part cannot state a
-direction yet. Gravity acts on the part's own mass too, unless `self_weight` is
-off.
+its force evenly over the faces its ports cover: along the direction the part
+states, a load written as `[x, y, z]` in its own frame, and along -Z, where a
+weight goes, for a load written as a magnitude. Gravity acts on the part's own
+mass too: the `gravity:` the part states, in its own frame -- what a simulation
+found it under, `g - a` -- or 9.81 m/s^2 along -Z unless `self_weight` is off.
 
 Quadratic tetrahedra by default: linear ones are far too stiff in bending, which
 is the loading almost every bracket sees.
@@ -77,7 +78,7 @@ def _analyse(path, request):
 def _sif(request, boundaries, fixed, loaded, loaded_records):
     """The solver input file: StressSolve, the material, gravity, and a condition per group."""
     density = float(request.get("density", 7850))
-    gravity = 9.81 if request.get("self_weight", True) else 0.0
+    gravity = _gravity_of(request)
     sif = (
         elmer.header()
         + """
@@ -98,6 +99,8 @@ Material 1
   Density = %.10g
 End
 Body Force 1
+  Stress Bodyforce 1 = %.10g
+  Stress Bodyforce 2 = %.10g
   Stress Bodyforce 3 = %.10g
 End
 """
@@ -107,7 +110,9 @@ End
             float(request.get("youngs_modulus", 2.1e11)),
             float(request.get("poissons_ratio", 0.30)),
             density,
-            -density * gravity,
+            density * gravity[0],
+            density * gravity[1],
+            density * gravity[2],
         )
     )
     number = 1
@@ -122,15 +127,37 @@ End
         number += 1
     for name, record in zip(loaded, loaded_records):
         # A force on the port, spread over the area it covers: a traction, so a
-        # finer mesh does not load the part harder.
-        traction = float(record["load"]) / (float(record["area"]) * elmer.M2_PER_MM2)
-        sif += "Boundary Condition %d\n  %s\n  Force 3 = %.10g\nEnd\n" % (
-            number,
-            elmer.targets(boundaries, [name]),
-            -traction,
+        # finer mesh does not load the part harder. A component of nought is
+        # left out rather than written as one.
+        area = float(record["area"]) * elmer.M2_PER_MM2
+        components = "".join(
+            "  Force %d = %.10g\n" % (axis + 1, value / area)
+            for axis, value in enumerate(_force_of(record))
+            if value != 0.0
         )
+        sif += "Boundary Condition %d\n  %s\n%sEnd\n" % (number, elmer.targets(boundaries, [name]), components)
         number += 1
     return sif
+
+
+def _force_of(record):
+    """The force on one loaded port, newtons in the part's frame: as stated, or its magnitude straight down."""
+    force = record.get("force")
+    if isinstance(force, (list, tuple)) and len(force) == 3:
+        return [float(component) for component in force]
+    return [0.0, 0.0, -float(record["load"])]
+
+
+def _gravity_of(request):
+    """The acceleration of free fall the part is weighed under, m/s^2 in its own frame.
+
+    The part's own `gravity:` where it stated one -- a gravity of nought weighs
+    nothing -- and otherwise 9.81 m/s^2 along -Z, unless `self_weight` is off.
+    """
+    stated = request.get("gravity")
+    if isinstance(stated, (list, tuple)) and len(stated) == 3:
+        return [float(component) for component in stated]
+    return [0.0, 0.0, -9.81 if request.get("self_weight", True) else 0.0]
 
 
 def _verdict(peak_stress, peak_displacement, request):
