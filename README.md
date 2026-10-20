@@ -46,6 +46,20 @@ parts:
         beam-tip: 1 W
 ```
 
+### What the numbers mean
+
+A `load` value is a force, and PartCAD turns it into newtons before this package sees it. Write a number and a
+unit -- `n`, `mn`, `kn` or `newton` for a force, `mg`, `g`, `kg`, `ton`, `tonne`, `lb` or `pound` for a mass,
+matched case-insensitively, with or without a space and a plural `s` -- or a **bare number, which is a mass in
+kilograms**, weighed at 9.8 N/kg: `hook: 5` is 49 N. A direction is three of those, each read the same way, so
+`[0, 0, -5]` is the same 49 N straight down, and `[0 N, -2.7 N, -155.2 N]` is newtons as written. What a
+simulation measured is in newtons, so write the unit: `[0, -2.7, -155.2]` would be read as 1.5 kN.
+`cfd` reads its `load:` the same way: the newtons that push the fluid in, spread over the inlet's area.
+
+`gravity:` is an acceleration, m/s² along each of the part's axes -- a number, or a string saying so
+(`9.81 m/s^2`). The part's own weight is its mass, `density` times its volume, under that acceleration, in
+place of the 9.81 m/s² along -Z that `self_weight` applies otherwise; it is never a `load`.
+
 What comes back is a `<part>.<analysis>.glb` the Digital Thread shows in the analysis's tab -- coloured by
 von Mises stress, by how far each point moves in the first mode, by temperature, or by pressure -- a
 measurement line in the log, and **findings**, which fail `pc test`:
