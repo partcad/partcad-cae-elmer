@@ -12,15 +12,16 @@ pc cae cfd :duct           # how does a fluid flow through it
 pc test                    # every analysis a part declares, as a check that fails on any finding
 ```
 
-Name it for one run with `-i //pub/feature/cae/elmer:<analysis>`, for a part with `implementation:` in the
-part's analysis section, or for everything with the `cae<Analysis>Implementation` user configuration option
+Name it for one run with `-i //pub/feature/cae/elmer:<analysis>`, for one of a part's scenarios with
+`implementation:` in it, or for everything with the `cae<Analysis>Implementation` user configuration option
 (`caeDynamicImplementation` and `caeThermalImplementation` default to this package).
 
 ## What each analysis reads
 
-Each analysis reads its own section of the part. Every key names interfaces the part implements, and is
-applied to the **faces each port covers**: PartCAD imprints a port's sketch on the part before this package
-runs, so an inlet drawn as a 3 mm circle is a 3 mm circle; a port with no sketch covers the face it lies on.
+Each analysis reads its own section of the part, a map of named scenarios: `pc cae <analysis>` runs each, and
+`-f <scenario>` one. Every key names interfaces the part implements, and is applied to the **faces each port
+covers**: PartCAD imprints a port's sketch on the part before this package runs, so an inlet drawn as a 3 mm
+circle is a 3 mm circle; a port with no sketch covers the face it lies on.
 
 | analysis | section keys | what they mean here |
 | --- | --- | --- |
@@ -37,13 +38,15 @@ parts:
       beam-root: [[-50, 0, 0], [0, 0, 1], 0]
       beam-tip: [[50, 0, 0], [0, 0, 1], 0]
     dynamic:
-      fix:
-        - beam-root
+      clamped:
+        fix:
+          - beam-root
     thermal:
-      temperature:
-        beam-root: 20 C
-      heat:
-        beam-tip: 1 W
+      heated:
+        temperature:
+          beam-root: 20 C
+        heat:
+          beam-tip: 1 W
 ```
 
 ### What the numbers mean
@@ -60,9 +63,9 @@ simulation measured is in newtons, so write the unit: `[0, -2.7, -155.2]` would 
 (`9.81 m/s^2`). The part's own weight is its mass, `density` times its volume, under that acceleration, in
 place of the 9.81 m/s² along -Z that `self_weight` applies otherwise; it is never a `load`.
 
-What comes back is a `<part>.<analysis>.glb` the Digital Thread shows in the analysis's tab -- coloured by
-von Mises stress, by how far each point moves in the first mode, by temperature, or by pressure -- a
-measurement line in the log, and **findings**, which fail `pc test`:
+What comes back is a `<part>.<analysis>.<scenario>.glb` the Digital Thread shows in the analysis's tab --
+coloured by von Mises stress, by how far each point moves in the first mode, by temperature, or by pressure --
+a measurement line in the log, and **findings**, which fail `pc test`:
 
 * `fea`: a stress past the yield strength (an error) or past it divided by `safety_factor`, a displacement
   past `max_displacement`;
@@ -96,8 +99,8 @@ Code_Aster, on the same mesh, gives the same displacement, frequencies and tempe
 
 ## Parameters
 
-Set in a `cae: <analysis>:` section of the package that uses this one, or of the part. See `partcad.yaml`
-for every default and why it is what it is.
+Set in a `cae: <analysis>:` section of the package that uses this one, or of the part, or in one scenario's
+`params:`. See `partcad.yaml` for every default and why it is what it is.
 
 | parameter | analyses | meaning |
 | --- | --- | --- |
