@@ -9,7 +9,7 @@ pc cae fea :bracket        # does it hold up under what it carries
 pc cae dynamic :bracket    # at which frequencies does it ring, held as it is
 pc cae thermal :heatsink   # how hot does it get, heated and cooled as it is
 pc cae cfd :duct           # how does a fluid flow through it
-pc test                    # every analysis a part declares, as a check that fails on any finding
+pc qual test               # every analysis a part declares, as a check that fails on any finding
 ```
 
 Name it for one run with `-i //pub/feature/cae/elmer:<analysis>`, for a part with `implementation:` in the
@@ -62,7 +62,7 @@ place of the 9.81 m/s² along -Z that `self_weight` applies otherwise; it is nev
 
 What comes back is a `<part>.<analysis>.glb` the Digital Thread shows in the analysis's tab -- coloured by
 von Mises stress, by how far each point moves in the first mode, by temperature, or by pressure -- a
-measurement line in the log, and **findings**, which fail `pc test`:
+measurement line in the log, and **findings**, which fail `pc qual test`:
 
 * `fea`: a stress past the yield strength (an error) or past it divided by `safety_factor`, a displacement
   past `max_displacement`;
