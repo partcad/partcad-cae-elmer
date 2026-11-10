@@ -5,7 +5,7 @@
 # means. What makes these analyses is the section they are declared in: `cae:`.
 # Each writes binary glTF, the result being a 3D field the Digital Thread turns
 # and zooms, and answers with `findings` beside it: an empty list is a pass, and
-# is what `pc test` requires.
+# is what `pc qual test` requires.
 #
 # Elmer is the one solver here that covers all four: stress, modes, heat and
 # flow are each a solver module of the same ElmerSolver, driven by one kind of
